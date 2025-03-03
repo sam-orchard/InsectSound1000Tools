@@ -3,7 +3,7 @@ The function fetchfiles will return a list of absolute paths of all files
 under the given path. If a keyword is given as the optional second argument,
 only the absolute path of the files containing the keyword in their filename
 are returned. Furthermore, keyword_not may be given as the third optional
-argument. The keyword_not may be a longer version of the keyword that is not supposedto trigger the return of the path 
+argument. The keyword_not may be a longer version of the keyword that is not supposedto trigger the return of the path
 (e.g. keyword=fire, keyword_not=firefly)
 
                                                                 Jelto Branding
@@ -13,7 +13,7 @@ import os
 import re
 
 
-def fetchfiles(path, keyword=None, keyword_not=None):
+def fetchfiles(path, keyword=None, keyword_not=None, dir_keyword=None):
     # Take note of the original dir
     owd = os.getcwd()
     # Change to dir specified in path:
@@ -23,20 +23,27 @@ def fetchfiles(path, keyword=None, keyword_not=None):
     # Create an empty list to store results:
     abspath_list = []
     # Store all filenames in cwd in a list:
-    filenames = os.listdir(cwd)
+    filenames = [f for f in os.listdir(cwd) if not f.startswith('.')]
     # cd bake to original dir:
     os.chdir(owd)
 
     # If no keyword was given, fetch all file names in the path:
     if keyword is None:
-        # Build a list of absolute paths by joining all
-        # the cwd and filename stings:
-        for filename in filenames:
-            abspath_list.append(os.path.abspath(os.path.join(cwd, filename)))
+        if dir_keyword is None:
+            # Build a list of absolute paths by joining all
+            # the cwd and filename stings:
+            for filename in filenames:
+                abspath_list.append(os.path.abspath(os.path.join(cwd, filename)))
 
-        if len(abspath_list) == 0:
-            print('The given path contained no files.')
-
+            if len(abspath_list) == 0:
+                print('The given path contained no files.')
+        else:
+            for filename in filenames:
+                if os.path.isdir(os.path.join(cwd, filename)):
+                    if re.search(dir_keyword, filename) is not None:
+                        for file in os.listdir(os.path.join(cwd, filename)):
+                            abspath_list.append(os.path.abspath(os.path.join(cwd, filename, file)))
+        print('Returning List')
         return abspath_list
 
     # Else, if a keyword was given, check for all file names in the path if
